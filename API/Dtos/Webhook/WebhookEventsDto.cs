@@ -12,6 +12,11 @@ namespace API.Dtos.Webhook
         public string? ReplyToken { get; set; } // 回覆此事件所使用的 token
         public MessageEventDto? Message { get; set; } // 收到訊息的事件，可收到 text、sticker、image、file、video、audio、location 訊息
         public UnsendEventDto? Unsend { get; set; } //使用者回收訊息
+
+        public MemberEventDto? Joined { get; set; }
+        public MemberEventDto? Left { get; set; }
+        public PostbackEventDto? Postback { get; set; }
+        public VideoViewingCompleteEventObjectDto? VideoPlayComplete { get; set; }
     }
 
     public class SourceDto
@@ -94,4 +99,30 @@ namespace API.Dtos.Webhook
     {
         public string messageId { get; set; }
     }
+
+    public class MemberEventDto
+    {
+        public List<SourceDto> Members { get; set; }
+    }
+
+    public class PostbackEventDto
+    {
+        public string? Data { get; set; }
+        public PostbackEventParamDto? Params { get; set; }
+    }
+
+    public class PostbackEventParamDto
+    {
+        public string? Date { get; set; }
+        public string? Time { get; set; }
+        public string? DateTime { get; set; }
+        public string? NewRichMenuAliasId { get; set; }
+        public string? Status { get; set; }
+    }
+
+    public class VideoViewingCompleteEventObjectDto
+    {
+        public string TrackingId { get; set; }
+    }
+
 }
