@@ -12,8 +12,8 @@ namespace API.Domain
     {
         // (將 LineBotController 裡宣告的 ChannelAccessToken & ChannelSecret 移到 LineBotService中)
         // 貼上 messaging api channel 中的 accessToken & secret
-        private readonly string channelAccessToken = "";
-        private readonly string channelSecrect ="";
+        private readonly string channelAccessToken = "ZmY9zXQfKh6ne6Idvi1D/lGqZB1RVER1v+MyMyWwS7fyis1FSiOo2JNh5nTrXXoefvE7MtHO0LlU/2y9LKaZvN08meRovOBU028q/Dq8jMrvRfBBDCuBmB6yzliI6TOBKbc+2OqFdBKIHLcwpTMicgdB04t89/1O/w1cDnyilFU=";
+        private readonly string channelSecrect ="5821cf68195653888a23d30e0645c5ac";
 
         private readonly string replyMessageUri = "https://api.line.me/v2/bot/message/reply";
         private readonly string broadcastMessageUri = "https://api.line.me/v2/bot/message/broadcast";
@@ -32,7 +32,18 @@ namespace API.Domain
                 switch (eventObject.Type)
                 {
                     case WebhookEventTypeEnum.Message:
-                        Console.WriteLine("收到使用者傳送訊息！");
+                        var replyMessage = new ReplyMessageRequestDto<TextMessageDto>()
+                        {
+                            ReplyToken = eventObject.ReplyToken,
+                            Messages = new List<TextMessageDto>
+                            {
+                                new TextMessageDto()
+                                {
+                                    Text = $"您好，您傳送了\"{eventObject.Message.Text}\"!"
+                                }
+                            }
+                        };
+                        ReplyMessageHandler("text",replyMessage);
                         break;
                     case WebhookEventTypeEnum.Unsend:
                         Console.WriteLine($"使用者{eventObject.Source.UserId}在聊天室收回訊息！");
@@ -100,6 +111,28 @@ namespace API.Domain
                 Method = HttpMethod.Post,
                 RequestUri = new Uri(broadcastMessageUri),
                 Content = new StringContent(json,Encoding.UTF8, "application/json")
+            };
+
+            var response = await client.SendAsync(requestMessage);
+            Console.WriteLine(await response.Content.ReadAsStringAsync());
+        }
+
+        public void ReplyMessageHandler<T>(string messageType, ReplyMessageRequestDto<T> requestBody)
+        {
+            ReplyMessage(requestBody);
+        }
+
+        public async void ReplyMessage<T>(ReplyMessageRequestDto<T> request)
+        {
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", channelAccessToken);
+
+            var json = _jsonProvider.Serialize(request);
+            var requestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(replyMessageUri),
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
 
             var response = await client.SendAsync(requestMessage);
