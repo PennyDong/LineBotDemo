@@ -12,7 +12,7 @@ namespace API.Domain
     {
         // (將 LineBotController 裡宣告的 ChannelAccessToken & ChannelSecret 移到 LineBotService中)
         // 貼上 messaging api channel 中的 accessToken & secret
-        private readonly string channelAccessToken = "ZmY9zXQfKh6ne6Idvi1D/lGqZB1RVER1v+MyMyWwS7fyis1FSiOo2JNh5nTrXXoefvE7MtHO0LlU/2y9LKaZvN08meRovOBU028q/Dq8jMrvRfBBDCuBmB6yzliI6TOBKbc+2OqFdBKIHLcwpTMicgdB04t89/1O/w1cDnyilFU=";
+        private readonly string channelAccessToken = "";
         private readonly string channelSecrect ="";
 
         private readonly string replyMessageUri = "https://api.line.me/v2/bot/message/reply";
