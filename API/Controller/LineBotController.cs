@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using API.Domain;
 using API.Dtos.Webhook;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace MyApp.Namespace
 {
@@ -11,6 +12,7 @@ namespace MyApp.Namespace
     {
 
         private readonly LineBotService _lineBotService;
+        
         public LineBotController()
         {
             _lineBotService = new LineBotService();
@@ -29,5 +31,7 @@ namespace MyApp.Namespace
             _lineBotService.BroadcastMessageHandler(messageType, body);
             return Ok();
         }
+
+        
     }
 }

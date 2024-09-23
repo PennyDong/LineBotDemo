@@ -12,8 +12,8 @@ namespace API.Domain
     {
         // (將 LineBotController 裡宣告的 ChannelAccessToken & ChannelSecret 移到 LineBotService中)
         // 貼上 messaging api channel 中的 accessToken & secret
-        private readonly string channelAccessToken = "";
-        private readonly string channelSecrect ="";
+        private readonly string channelAccessToken = "tqsCHSPN3dzYclZlk2DUBRjgK2CjnaSHgaRJC6ZhgShd1B/VvWdf3PAIWtvYNFXifvE7MtHO0LlU/2y9LKaZvN08meRovOBU028q/Dq8jMr12S6US+/OJH5h5G2+AeGcC6n/T8c1wCz4poOdy9yLqwdB04t89/1O/w1cDnyilFU=";
+        private readonly string channelSecrect ="5821cf68195653888a23d30e0645c5ac";
 
         private readonly string replyMessageUri = "https://api.line.me/v2/bot/message/reply";
         private readonly string broadcastMessageUri = "https://api.line.me/v2/bot/message/broadcast";
@@ -80,7 +80,15 @@ namespace API.Domain
                         Console.WriteLine($"使用者{eventObject.Source.UserId}觸發了postback事件");
                         break;
                     case WebhookEventTypeEnum.VideoPlayComplete:
-                        Console.WriteLine($"使用者{eventObject.Source.UserId}");
+                         replyMessage = new ReplyMessageRequestDto<TextMessageDto>()
+                        {
+                            ReplyToken = eventObject.ReplyToken,
+                            Messages = new List<TextMessageDto>
+                            {
+                                new TextMessageDto(){Text = $"使用者您好，謝謝您收看我們的宣傳影片，祝您身體健康萬事如意 !"}
+                            }
+                        };
+                        ReplyMessageHandler("text", replyMessage);
                         break;
                    
                 }
@@ -90,15 +98,40 @@ namespace API.Domain
         public void BroadcastMessageHandler(string messageType, object requestBody)
         {
             string strBody = requestBody.ToString();
+            dynamic messageRequest = new BroadcastMessageRequestDto<BaseMessageDto>();
+
             switch (messageType)
             {
                 case MessageTypeEnum.Text:
-                    var messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<TextMessageDto>>(strBody);
-                    BroadcastMessage(messageRequest);
+                    messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<TextMessageDto>>(strBody);
+                    
+                    break;
+
+                case MessageTypeEnum.Sticker:
+                    messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<StickerMessageDto>>(strBody);
+                    break;
+
+                case MessageTypeEnum.Image:
+                    messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<ImageMessageDto>>(strBody);
+                    break;
+
+                case MessageTypeEnum.Video:
+                    messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<VideoMessageDto>>(strBody);
+                    break;
+                case MessageTypeEnum.Audio:
+                    messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<AudioMessageDto>>(strBody);
+                    break;
+                case MessageTypeEnum.Location:
+                    messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<LocationMessageDto>>(strBody);
+                    break;
+                case MessageTypeEnum.Imagemap:
+                    messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<ImagemapMessageDto>>(strBody);
                     break;
             }
+            BroadcastMessage(messageRequest);
         }
 
+        //廣播訊息
         public async void BroadcastMessage<T>(BroadcastMessageRequestDto<T> request)
         {
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -116,6 +149,8 @@ namespace API.Domain
             var response = await client.SendAsync(requestMessage);
             Console.WriteLine(await response.Content.ReadAsStringAsync());
         }
+
+        //回覆
 
         public void ReplyMessageHandler<T>(string messageType, ReplyMessageRequestDto<T> requestBody)
         {
@@ -138,5 +173,7 @@ namespace API.Domain
             var response = await client.SendAsync(requestMessage);
             Console.WriteLine(await response.Content.ReadAsStringAsync());
         }
+
+        
     }
 }
