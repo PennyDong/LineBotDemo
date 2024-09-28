@@ -1,5 +1,6 @@
 
 using API.Enum;
+using LineBotMessage.Dtos;
 using LineBotMessage.Dtos.Actions;
 
 namespace API.Dtos.Messages

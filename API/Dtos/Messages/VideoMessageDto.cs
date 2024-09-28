@@ -1,4 +1,5 @@
 using API.Enum;
+using LineBotMessage.Dtos;
 
 namespace API.Dtos.Messages
 {

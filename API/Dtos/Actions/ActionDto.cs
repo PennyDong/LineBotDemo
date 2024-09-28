@@ -1,4 +1,4 @@
-namespace API.Dtos.Actions
+namespace API.Dtos
 {
     public class ActionDto
     {
@@ -6,9 +6,9 @@ namespace API.Dtos.Actions
         public string? Label { get; set; }
 
         //Postback action.
-        public string? Data { get; set; }
-        public string? DisplayText { get; set; }
-        public string? InputOption { get; set; }
+        public string? Data { get; set; } 
+        public string? DisplayText { get; set; } 
+        public string? InputOption { get; set; } 
         public string? FillInText { get; set; }
 
         //Message action
@@ -19,10 +19,7 @@ namespace API.Dtos.Actions
         public string? Uri { get; set; }
         public UriActionAltUriDto? AltUri { get; set; }
 
-        public class UriActionAltUriDto
-        {
-            public string Desktop { get; set; }
-        }
+        
 
         //datetime picker action
 
@@ -31,4 +28,8 @@ namespace API.Dtos.Actions
         public string? Max { get; set; }
         public string? Min { get; set; }
     }
+    public class UriActionAltUriDto
+        {
+            public string Desktop { get; set; }
+        }
 }

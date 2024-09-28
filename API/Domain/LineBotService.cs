@@ -1,10 +1,12 @@
 using System.Net.Http.Headers;
 using System.Text;
+using API.Dtos;
 using API.Dtos.Messages;
 using API.Dtos.Messages.Request;
 using API.Dtos.Webhook;
 using API.Enum;
 using API.Providers;
+using LineBotMessage.Dtos;
 
 namespace API.Domain
 {
@@ -12,7 +14,7 @@ namespace API.Domain
     {
         // (將 LineBotController 裡宣告的 ChannelAccessToken & ChannelSecret 移到 LineBotService中)
         // 貼上 messaging api channel 中的 accessToken & secret
-        private readonly string channelAccessToken = "tqsCHSPN3dzYclZlk2DUBRjgK2CjnaSHgaRJC6ZhgShd1B/VvWdf3PAIWtvYNFXifvE7MtHO0LlU/2y9LKaZvN08meRovOBU028q/Dq8jMr12S6US+/OJH5h5G2+AeGcC6n/T8c1wCz4poOdy9yLqwdB04t89/1O/w1cDnyilFU=";
+        private readonly string channelAccessToken = "dKgRZr+LBjAl5P29VxfIRHvExFUkSQUqQPx+q/inV33ArITTLOhbSjat+n+tgIOcfvE7MtHO0LlU/2y9LKaZvN08meRovOBU028q/Dq8jMqyivJoXX5kN5i5GYj4E86mnES+jbcTb34i4JijjHKRUAdB04t89/1O/w1cDnyilFU=";
         private readonly string channelSecrect ="5821cf68195653888a23d30e0645c5ac";
 
         private readonly string replyMessageUri = "https://api.line.me/v2/bot/message/reply";
@@ -21,29 +23,16 @@ namespace API.Domain
         private readonly JsonProvider _jsonProvider = new JsonProvider(); 
     
 
-        public LineBotService()
-        {
-        }
-
         public void ReceiveWebhook(WebhookRequestBodyDto requestBody)
         {
-            foreach(var eventObject in requestBody.Events)
+            dynamic replyMessage;
+            foreach (var eventObject in requestBody.Events)
             {
                 switch (eventObject.Type)
                 {
                     case WebhookEventTypeEnum.Message:
-                        var replyMessage = new ReplyMessageRequestDto<TextMessageDto>()
-                        {
-                            ReplyToken = eventObject.ReplyToken,
-                            Messages = new List<TextMessageDto>
-                            {
-                                new TextMessageDto()
-                                {
-                                    Text = $"您好，您傳送了\"{eventObject.Message.Text}\"!"
-                                }
-                            }
-                        };
-                        ReplyMessageHandler("text",replyMessage);
+                        if (eventObject.Message.Type == MessageTypeEnum.Text)
+                            ReceiveMessageWebhookEvent(eventObject);
                         break;
                     case WebhookEventTypeEnum.Unsend:
                         Console.WriteLine($"使用者{eventObject.Source.UserId}在聊天室收回訊息！");
@@ -62,7 +51,7 @@ namespace API.Domain
                         break;
                     case WebhookEventTypeEnum.MemberJoined:
                         string joinedMemberIds = "";
-                        foreach(var member in eventObject.Joined.Members)
+                        foreach (var member in eventObject.Joined.Members)
                         {
                             joinedMemberIds += $"{member.UserId} ";
                         }
@@ -80,7 +69,7 @@ namespace API.Domain
                         Console.WriteLine($"使用者{eventObject.Source.UserId}觸發了postback事件");
                         break;
                     case WebhookEventTypeEnum.VideoPlayComplete:
-                         replyMessage = new ReplyMessageRequestDto<TextMessageDto>()
+                        replyMessage = new ReplyMessageRequestDto<TextMessageDto>()
                         {
                             ReplyToken = eventObject.ReplyToken,
                             Messages = new List<TextMessageDto>
@@ -88,12 +77,12 @@ namespace API.Domain
                                 new TextMessageDto(){Text = $"使用者您好，謝謝您收看我們的宣傳影片，祝您身體健康萬事如意 !"}
                             }
                         };
-                        ReplyMessageHandler("text", replyMessage);
+                        ReplyMessageHandler(replyMessage);
                         break;
-                   
                 }
-            }   
+            }
         }
+
 
         public void BroadcastMessageHandler(string messageType, object requestBody)
         {
@@ -151,8 +140,149 @@ namespace API.Domain
         }
 
         //回覆
+        private void ReceiveMessageWebhookEvent(WebhookEventsDto eventDto)
+        {
+            dynamic replyMessage = new ReplyMessageRequestDto<BaseMessageDto>();
 
-        public void ReplyMessageHandler<T>(string messageType, ReplyMessageRequestDto<T> requestBody)
+            switch(eventDto.Message.Type)
+            {
+                //收到文字訊息
+                case MessageTypeEnum.Text:
+                    //訊息內容等於 "測試" 時
+                    if(eventDto.Message.Type == "text")
+                    {
+                        replyMessage = new ReplyMessageRequestDto<TextMessageDto>
+                        {
+                            ReplyToken = eventDto.ReplyToken,
+                            Messages = new List<TextMessageDto>
+                            {
+                                 new TextMessageDto
+                                {
+                                    Text = "QuickReply 測試訊息",
+                                    QuickReply = new QuickReplyItemDto
+                                    {
+                                        Items = new List<QuickReplyButtonDto>
+                                        {
+                                            // message action
+                                            new QuickReplyButtonDto {
+                                                Action = new ActionDto {
+                                                    Type = ActionTypeEnum.Message,
+                                                    Label = "message 測試" ,
+                                                    Text = "測試"
+                                                }
+                                            },
+                                            // uri action
+                                            new QuickReplyButtonDto {
+                                                Action = new ActionDto {
+                                                    Type = ActionTypeEnum.Uri,
+                                                    Label = "uri 測試" ,
+                                                    Uri = "https://www.appx.com.tw"
+                                                }
+                                            },
+                                            // 使用 uri schema 分享 Line Bot 資訊
+                                            new QuickReplyButtonDto {
+                                                Action = new ActionDto {
+                                                    Type = ActionTypeEnum.Uri,
+                                                    Label = "分享 Line Bot 資訊" ,
+                                                    Uri = "https://line.me/R/nv/recommendOA/@089yvykp"
+                                                }
+                                            },
+                                            // postback action
+                                            new QuickReplyButtonDto {
+                                                Action = new ActionDto {
+                                                    Type = ActionTypeEnum.Postback,
+                                                    Label = "postback 測試" ,
+                                                    Data = "quick reply postback action" ,
+                                                    DisplayText = "使用者傳送 displayTex，但不會有 Webhook event 產生。",
+                                                    InputOption = PostbackInputOptionEnum.OpenKeyboard,
+                                                    FillInText = "第一行\n第二行"
+                                                }
+                                            },
+                                            // datetime picker action
+                                            new QuickReplyButtonDto {
+                                                Action = new ActionDto {
+                                                Type = ActionTypeEnum.DatetimePicker,
+                                                Label = "日期時間選擇",
+                                                    Data = "quick reply datetime picker action",
+                                                    Mode = DatetimePickerModeEnum.Datetime,
+                                                    Initial = "2022-09-30T19:00",
+                                                    Max = "2022-12-31T23:59",
+                                                    Min = "2021-01-01T00:00"
+                                                }
+                                            },
+                                            // camera action
+                                            new QuickReplyButtonDto {
+                                                Action = new ActionDto {
+                                                    Type = ActionTypeEnum.Camera,
+                                                    Label = "開啟相機"
+                                                }
+                                            },
+                                            // camera roll action
+                                            new QuickReplyButtonDto {
+                                                Action = new ActionDto {
+                                                    Type = ActionTypeEnum.CameraRoll,
+                                                    Label = "開啟相簿"
+                                                }
+                                            },
+                                            // location action
+                                            new QuickReplyButtonDto {
+                                                Action = new ActionDto {
+                                                    Type = ActionTypeEnum.Location,
+                                                    Label = "開啟位置"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }   
+                        };
+                    }
+
+                    if(eventDto.Message.Text =="Sender")
+                    {
+                        replyMessage = new ReplyMessageRequestDto<TextMessageDto>
+                        {
+                            ReplyToken = eventDto.ReplyToken,
+                            Messages = new List<TextMessageDto>
+                            {
+                                new TextMessageDto
+                                {
+                                   Text = "您好，我是客服人員 1號",
+                                   Sender = new SenderDto
+                                   {
+                                        Name ="客服人員 1號",
+                                        IconUrl = "{ngrok 位置}/UploadFiles/gamer.png"
+                                   }
+                                },
+                                new TextMessageDto
+                                {
+                                    Text = "您好，我是客服人員 2號",
+                                    Sender = new SenderDto
+                                    {
+                                        Name = "客服人員 2號",
+                                        IconUrl = "{ngrok 位置}/UploadFiles/streamer.png"
+                                    }
+                                },
+                                new TextMessageDto
+                                {
+                                    Text = "您好，我是客服人員 3號",
+                                    Sender = new SenderDto
+                                    {
+                                        Name = "客服人員 3號",
+                                        IconUrl = "{ngrok 位置}/UploadFiles/host.png"
+                                    }
+                                }
+                            }
+                        };
+                    }
+
+                    break;
+            }
+            ReplyMessageHandler(replyMessage);
+        }
+
+
+        public void ReplyMessageHandler<T>(ReplyMessageRequestDto<T> requestBody)
         {
             ReplyMessage(requestBody);
         }
@@ -174,6 +304,9 @@ namespace API.Domain
             Console.WriteLine(await response.Content.ReadAsStringAsync());
         }
 
+
         
     }
+
+
 }
