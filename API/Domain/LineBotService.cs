@@ -14,7 +14,7 @@ namespace API.Domain
     {
         // (將 LineBotController 裡宣告的 ChannelAccessToken & ChannelSecret 移到 LineBotService中)
         // 貼上 messaging api channel 中的 accessToken & secret
-        private readonly string channelAccessToken = "dKgRZr+LBjAl5P29VxfIRHvExFUkSQUqQPx+q/inV33ArITTLOhbSjat+n+tgIOcfvE7MtHO0LlU/2y9LKaZvN08meRovOBU028q/Dq8jMqyivJoXX5kN5i5GYj4E86mnES+jbcTb34i4JijjHKRUAdB04t89/1O/w1cDnyilFU=";
+        private readonly string channelAccessToken = "CARN7MWmB+0KJyEBrHN/7slidX9Q9ZKLkOpSiNRXqeR2IUvDwup8ND9fArXZw+IbfvE7MtHO0LlU/2y9LKaZvN08meRovOBU028q/Dq8jMpc7Xwsaag8Ltcaw1jnmUJfc2H202QhODU/xUx9JVCU7QdB04t89/1O/w1cDnyilFU=";
         private readonly string channelSecrect ="5821cf68195653888a23d30e0645c5ac";
 
         private readonly string replyMessageUri = "https://api.line.me/v2/bot/message/reply";
@@ -116,6 +116,13 @@ namespace API.Domain
                 case MessageTypeEnum.Imagemap:
                     messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<ImagemapMessageDto>>(strBody);
                     break;
+                case MessageTypeEnum.FlexBubble:
+                    messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<FlexMessageDto<FlexBubbleContainerDto>>>(strBody);
+                    break;
+
+                case MessageTypeEnum.FlexCarousel:
+                    messageRequest = _jsonProvider.Deserialize<BroadcastMessageRequestDto<FlexMessageDto<FlexCarouselContainerDto>>>(strBody);
+                    break;
             }
             BroadcastMessage(messageRequest);
         }
@@ -149,7 +156,7 @@ namespace API.Domain
                 //收到文字訊息
                 case MessageTypeEnum.Text:
                     //訊息內容等於 "測試" 時
-                    if(eventDto.Message.Type == "text")
+                    if(eventDto.Message.Type == "測試")
                     {
                         replyMessage = new ReplyMessageRequestDto<TextMessageDto>
                         {
@@ -276,6 +283,180 @@ namespace API.Domain
                         };
                     }
 
+                    // 關鍵字 : "Buttons"
+                    if (eventDto.Message.Text == "Buttons")
+                    {
+                        replyMessage = new ReplyMessageRequestDto<TemplateMessageDto<ButtonsTemplateDto>>
+                        {
+                            ReplyToken = eventDto.ReplyToken,
+                            Messages = new List<TemplateMessageDto<ButtonsTemplateDto>>
+                            {
+                                new TemplateMessageDto<ButtonsTemplateDto>
+                                {
+                                    AltText = "這是按鈕模板訊息",
+                                    Template = new ButtonsTemplateDto
+                                    {
+                                        ThumbnailImageUrl = "https://i.imgur.com/CP6ywwc.jpg",
+                                        ImageAspectRatio = TemplateImageAspectRatioEnum.Rectangle,
+                                        ImageSize = TemplateImageSizeEnum.Cover,
+                                        Title = "親愛的用戶您好，歡迎您使用本美食推薦系統",
+                                        Text = "請選擇今天想吃的主食，系統會推薦附近的餐廳給您。",
+                                        Actions = new List<ActionDto>
+                                        {
+                                            new ActionDto
+                                            {
+                                                Type = ActionTypeEnum.Postback,
+                                                Data = "foodType=sushi",
+                                                Label = "壽司",
+                                                DisplayText = "壽司"
+                                            },
+                                            new ActionDto
+                                            {
+                                                Type = ActionTypeEnum.Postback,
+                                                Data = "foodType=hot-pot",
+                                                Label = "火鍋",
+                                                DisplayText = "火鍋"
+                                            },
+                                            new ActionDto
+                                            {
+                                                Type = ActionTypeEnum.Postback,
+                                                Data = "foodType=steak",
+                                                Label = "牛排",
+                                                DisplayText = "牛排"
+                                            },
+                                            new ActionDto
+                                            {
+                                                Type = ActionTypeEnum.Postback,
+                                                Data = "foodType=next",
+                                                Label = "下一個",
+                                                DisplayText = "下一個"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                    }
+
+                    if (eventDto.Message.Text == "Confirm")
+                    {
+                        replyMessage = new ReplyMessageRequestDto<TemplateMessageDto<ConfirmTemplateDto>>
+                        {
+                            ReplyToken = eventDto.ReplyToken,
+                            Messages = new List<TemplateMessageDto<ConfirmTemplateDto>>
+                            {
+                                new TemplateMessageDto<ConfirmTemplateDto>
+                                {
+                                    AltText = "這是確認模組訊息",
+                                    Template = new ConfirmTemplateDto
+                                    {
+                                        Text = "請問您是否喜歡本產品?\n(產品編號123)",
+                                        Actions = new List<ActionDto>
+                                        {
+                                            new ActionDto
+                                            {
+                                                Type = ActionTypeEnum.Postback,
+                                                Data = "id=123&like=yes",
+                                                Label = "喜歡",
+                                                DisplayText = "喜歡",
+                                            },
+                                            new ActionDto
+                                            {
+                                                Type = ActionTypeEnum.Postback,
+                                                Data = "id=123&like=no",
+                                                Label = "不喜歡",
+                                                DisplayText = "不喜歡",
+                                            }
+                                        }
+
+                                    }
+                                }
+
+                            }
+                        };
+                    }
+
+                    // 關鍵字 : "Carousel"
+                    if(eventDto.Message.Text == "Carousel")
+                    {
+                        replyMessage = new ReplyMessageRequestDto<TemplateMessageDto<CarouselTemplateDto>>
+                        {
+                            ReplyToken = eventDto.ReplyToken,
+                            Messages = new List<TemplateMessageDto<Dtos.Messages.CarouselTemplateDto>>
+                            {
+                                new TemplateMessageDto<CarouselTemplateDto>
+                                {
+                                    AltText = "這是輪播訊息",
+                                    Template = new CarouselTemplateDto
+                                    {
+                                        Columns = new List<CarouselColumnObjectDto>
+                                        {
+                                            new CarouselColumnObjectDto
+                                            {
+                                                ThumbnailImageUrl = "https://www.apple.com/v/iphone-14-pro/a/images/meta/iphone-14-pro_overview__e2a7u9jy63ma_og.png",
+                                                Title = "全新上市 iPhone 14 Pro",
+                                                Text = "現在購買享優惠，全品項 9 折",
+                                                Actions = new List<ActionDto>
+                                                {
+                                                    //按鈕 action
+                                                    new ActionDto
+                                                    {
+                                                        Type = ActionTypeEnum.Uri,
+                                                        Label ="立即購買",
+                                                        Uri = "https://www.apple.com/tw/iphone-14-pro/?afid=p238%7Cs2W650oa9-dc_mtid_2092576n66464_pcrid_620529299490_pgrid_144614079327_&cid=wwa-tw-kwgo-iphone-slid---productid--Brand-iPhone14Pro-Announce-"
+                                                    }
+                                                }
+                                            },
+                                            // 自行新增～
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                    }
+
+                    // 關鍵字 : "ImageCarousel"
+                    if(eventDto.Message.Text == "ImageCarousel")
+                    {
+                        replyMessage = new ReplyMessageRequestDto<TemplateMessageDto<ImageCarouselTemplateDto>>
+                        {
+                            ReplyToken = eventDto.ReplyToken,
+                            Messages = new List<TemplateMessageDto<ImageCarouselTemplateDto>>
+                            {
+                                new TemplateMessageDto<ImageCarouselTemplateDto>
+                                {
+                                    AltText = "這是圖片輪播訊息",
+                                    Template = new ImageCarouselTemplateDto
+                                    {
+                                        Columns = new List<ImageCarouselColumnObjectDto>
+                                        {
+                                            new ImageCarouselColumnObjectDto
+                                            {
+                                                ImageUrl = "https://i.imgur.com/74I9rlb.png",
+                                                Action = new ActionDto
+                                                {
+                                                    Type = ActionTypeEnum.Uri,
+                                                    Label = "前往官網",
+                                                    Uri = "https://www.apple.com/tw/iphone-14-pro/?afid=p238%7Cs2W650oa9-dc_mtid_2092576n66464_pcrid_620529299490_pgrid_144614079327_&cid=wwa-tw-kwgo-iphone-slid---productid--Brand-iPhone14Pro-Announce-"
+                                                }
+                                            },
+                                            new ImageCarouselColumnObjectDto
+                                            {
+                                                ImageUrl = "https://www.apple.com/v/iphone-14-pro/a/images/meta/iphone-14-pro_overview__e2a7u9jy63ma_og.png",
+                                                Action = new ActionDto
+                                                {
+                                                    Type = ActionTypeEnum.Uri,
+                                                    Label = "立即購買",
+                                                    Uri = "https://www.apple.com/tw/iphone-14-pro/?afid=p238%7Cs2W650oa9-dc_mtid_2092576n66464_pcrid_620529299490_pgrid_144614079327_&cid=wwa-tw-kwgo-iphone-slid---productid--Brand-iPhone14Pro-Announce-"
+                                                }
+                                            },
+                                                                
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                    }    
                     break;
             }
             ReplyMessageHandler(replyMessage);
