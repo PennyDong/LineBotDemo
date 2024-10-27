@@ -51,16 +51,46 @@
                             $("#user_status").text('狀態文字 : ' + res.statusMessage);
                         }
                     });
+
+                    $.get({
+                        url: baseLoginApiUrl + `Profile/IdToken/${res.id_token}`,
+                        dataType: 'json',
+                        success: function (res) {
+                            $("#idToken_user_avatar").attr("src", res.picture);
+                            $("#idToken_user_name").text(res.name);
+                            $("#idToken_user_email").text(res.email);
+                            $("#iss").text(res.iss);
+                            $("#sub").text(res.sub);
+                            $("#aud").text(res.aud);
+                            $("#exp").text(res.exp);
+                            $("#iat").text(res.iat);
+                            $("#amr").text(res.amr);
+                        }
+                    });
                 },
             })
         }
     </script>
     <center>
         <div class="container">
+            <a> -------- ACCESS TOKEN -------- </a>
             <a><img id="user_avatar" src=""></image></a>
             <a><a id="user_name">姓名 : </a></a>
             <a><a id="user_id">使用者ID : </a></a>
             <a><a id="user_status"> </a></a>
+        </div>
+
+        <div class="container">
+            <a> -------- ID TOKEN -------- </a>
+            <a><img id="idToken_user_avatar" src=""></image></a>
+            <a>name : <b id="idToken_user_name"></b></a>
+            <a>emial : <b id="idToken_user_email"></b></a>
+            <a>iss(token 簽發者) : <b id="iss"></b></a>
+            <a>sub(使用者 ID) : <b id="sub"></b></a>
+            <a>aud(Channel ID) : <b id="aud"></b></a>
+            <a>exp(id_token 過期時間) : <b id="exp"></b></a>
+            <a>iat(id_token 產生時間) : <b id="iat"></b></a>
+            <a>amr(使用者登入方式 ) : <b id="amr"></b></a>
         </div>
     </center>
 </body>

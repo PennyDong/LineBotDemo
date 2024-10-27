@@ -10,7 +10,7 @@ namespace API.Domain
     public class RichMenuService
     {
         private readonly string channelAccessToken = "MBtZnhz4fyaOemgcFfIHLzkAXpFCIU0tt+5kXFsUsSddR0i506eqiwCmiN2lqBmufvE7MtHO0LlU/2y9LKaZvN08meRovOBU028q/Dq8jMpgOG8Nmz1FtOqgwLpddZmIDY+oUOen+paCLQY8WPTCbgdB04t89/1O/w1cDnyilFU=";
-        private readonly string channelSecrect ="5821cf68195653888a23d30e0645c5ac";
+        private readonly string channelSecrect ="";
 
         private static HttpClient client = new HttpClient(); // 負責處理HttpRequest
         private readonly JsonProvider _jsonProvider = new JsonProvider(); 

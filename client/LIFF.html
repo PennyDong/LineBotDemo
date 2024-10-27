@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIFF - 讓 C# 也能很 Social 用戶資料</title>
+    <!-- CSS include -->
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- LIFF SDK CDN include -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <center>
+        <!-- QR Code 按鈕 -->
+        <div class="container">
+            <button onclick="openQRCodeReader()">開啟 QR Code 掃瞄器</button>
+            <a id="qrcode_string">QR Code Text</a>
+        </div>
+
+        <!-- SendMessage 按鈕 -->
+        <div class="container">
+            <button onclick="sendMessage()">傳送訊息</button>
+        </div>
+
+        <!-- ShareTargetPicker 按鈕 -->
+        <div class="container">
+            <button onclick="shareTargetPicker()">分享訊息</button>
+        </div>
+
+        <div class="container">
+            <a> -------- 環境 -------- </a>
+            <a>OS : <b id="os"></b></a>
+            <a>Language : <b id="language"></b></a>
+            <a>Version : <b id="version"></b></a>
+            <a>Line Version : <b id="lineVersion"></b></a>
+            <a>IsInClient : <b id="isInClient"></b></a>
+        </div>
+        <div class="container">
+            <a> -------- ACCESS TOKEN -------- </a>
+            <a><img id="user_avatar" src=""></image></a>
+            <a><a id="user_name">姓名 : </a></a>
+            <a><a id="user_id">使用者ID : </a></a>
+            <a><a id="user_status">狀態文字 : </a></a>
+        </div>
+        
+        <!-- 此部分使用 id token 取的使用者資料 -->
+        <div class="container">
+            <a> -------- ID TOKEN -------- </a>
+            <a><img id="idToken_user_avatar" src=""></image></a>
+            <a>name : <b id="idToken_user_name"></b></a>
+            <a>email : <b id="idToken_user_email"></b></a>
+            <a>iss(token 簽發者) : <b id="iss"></b></a>
+            <a>sub(使用者 ID) : <b id="sub"></b></a>
+            <a>aud(Channel ID) : <b id="aud"></b></a>
+            <a>exp(id_token 過期時間) : <b id="exp"></b></a>
+            <a>iat(id_token 產生時間) : <b id="iat"></b></a>
+            <a>amr(使用者登入方式 ) : <b id="amr"></b></a>
+        </div>
+    </center>
+    
+</body>
+      
+      <!-- jquery CDN include -->
+      <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+          integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+ 
+
+          <script>
+            window.onload = () =>{
+                const defaultLiffId = '2006426524-d5pMv0vV';//{LIFF ID}
+                $(document).ready(function(){
+                    liffInit(defaultLiffId);
+                });
+            }
+        
+            function liffInit(liffId){
+    
+                if (!liffId) {
+                console.error("LIFF ID is missing or invalid!");
+                return;
+                }
+                console.log(liffId)
+                // withLoginOnExternalBrowser : true 時代表 auto login 啟動，LIFF 初始化後會自動呼叫 liff.login 登入。
+                liff.init({ liffId: liffId, withLoginOnExternalBrowser: true }).then(() =>{
+                    // liff init 成功，可以隨意使用 liff sdk apis
+                    
+                    console.log(liff.isLoggedIn());  // 判斷開啟此網頁的 LINE 使用者是否為登入狀態
+    
+                    $("#os").text(liff.getOS());
+                    $("#language").text(liff.getLanguage());
+                    $("#version").text(liff.getVersion());
+                    $("#lineVersion").text(liff.getLineVersion());
+                    $("#isInClient").text(liff.isInClient());
+    
+                    console.log(liff.getLanguage());
+                    console.log(liff.getVersion());
+                    console.log(liff.isInClient());
+                    console.log(liff.isLoggedIn());
+                    console.log(liff.getOS());
+                    console.log(liff.getLineVersion());
+                    
+                    // 取得一般的 user profile
+                liff.getProfile().then(function(profile){
+                    console.log(profile);
+        
+                    $("#user_avatar").attr("src", profile.pictureUrl);
+                    $("#user_name").text("姓名 :" + profile.displayName );
+                    $("#user_id").text("使用者 :" + profile.userId);
+                    $("#user_status").text("狀態文字 :" + profile.statusMessage);
+                }).catch(function(error) {
+                    console.error("Failed to get profile: ", error);
+                });
+        
+                //取得包成 id token 的 user profile
+                const idTokenProfile = liff.getDecodedIDToken()
+                console.log(idTokenProfile);
+        
+                $("#idToken_user_avatar").attr("src", idTokenProfile.picture);
+                $("#idToken_user_name").text(idTokenProfile.name);
+                $("#idToken_user_email").text(idTokenProfile.email);
+        
+                $("#iss").text(idTokenProfile.iss);
+                $("#sub").text(idTokenProfile.sub);
+                $("#aud").text(idTokenProfile.exp);
+                $("#iat").text(idTokenProfile.iat);
+                $("#amr").text(idTokenProfile.amr);
+                }).catch((err) =>{
+                    //log error
+                    console.log(err.code,err.message);
+                })
+            }
+        
+        function openQRCodeReader(){
+    
+            liff.scanCodeV2()
+            .then((result)=>{
+                $("#qrcode_string").text(result.value);
+            })
+            .catch((error)=>{
+                $("#qrcode_string").text(error);
+                console.log("error",error);
+            })
+        }
+        
+
+        function sendMessage(){
+            
+            message = JSON.parse(`{
+                "type" : "text",
+                "text" : "LIFF 傳送訊息"
+            }`)
+
+            liff
+            .sendMessages([
+                message
+            ])
+            .then(()=>{
+                console.log("message sent");
+            })
+            .catch((err)=>{
+                $("#qrcode_string").text(error);
+                console.log("error",err);
+            });
+        }
+
+        function shareTargetPicker(){
+
+            if(!liff.isApiAvailable('shareTargetPicker')){
+                console.log("請檢查 Line 版本是否為 10.3.0 以上")
+                return;
+            }
+
+            message = JSON.parse(`{
+                "type" : "text",
+                "text" : "LIFF ShareTargetPicker 分享訊息"
+            }`)
+
+            liff.shareTargetPicker([message],{isMultiple:true});
+        }
+    
+         </script>
+</html>

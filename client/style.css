@@ -62,3 +62,9 @@ body {
 .container a {
     display: block;
 }
+
+#idToken_user_avatar {
+    width: 150px;
+    height: auto;
+    border-radius: 50%;
+}

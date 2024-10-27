@@ -15,8 +15,8 @@
 <body>
     <!-- 最上方的 bar -->
     <div class="topnav">
-        <a href="https://09e4-124-155-190-200.ngrok-free.app/client/login.html">Line Login</a>
-        <a href="https://09e4-124-155-190-200.ngrok-free.app/client/profile.html">User Profile</a>
+        <a href="https://2c97-124-155-190-200.ngrok-free.app/client/login.html">Line Login</a>
+        <a href="https://2c97-124-155-190-200.ngrok-free.app/client/profile.html">User Profile</a>
         <a href="#">Line Pay</a>
     </div>
     <!-- 按鈕 -->
@@ -24,6 +24,7 @@
         <!-- 使用了三個 function，分別為：滑鼠移入時切換圖片、滑鼠移出時切換圖片、被點擊時送出登入請求 -->
         <input type="image" src="./images/btn_login_base.png" onmousemove="hover(this)" onmouseout="unhover(this)"
             onclick="login()">
+        <a>登入後會請求搜集使用者 email，蒐集之 email 只用於參加 iThome 邦鐵人賽練習。</a>
     </div>
     <script>
         let baseLoginApiUrl = 'https://localhost:8080/api/LineLogin/'
@@ -31,7 +32,7 @@
         function login() {
             // 向我們的伺服器送出 request，取得 Line Login 頁面網址。
             $.get({
-                url: baseLoginApiUrl + 'Url' + "?redirectUrl=https://09e4-124-155-190-200.ngrok-free.app/client/profile.html",
+                url: baseLoginApiUrl + 'Url' + "?redirectUrl=https://https://2c97-124-155-190-200.ngrok-free.app/client/LIFF.html",
                 contentType: "application/json;charset=utf-8",
                 success: function (result) {
                     window.location = result; //取得網址並跳轉。

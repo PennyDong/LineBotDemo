@@ -38,5 +38,12 @@ namespace API.Controller
         {
             return await _lineLoginService.GetUserProfileByAccessToken(accessToken);
         }
+
+        // 使用 id token 取得 user profile
+        [HttpGet("Profile/IdToken/{idToken}")]
+        public async Task<UserIdTokenProfileDto> GetUserProfileByIdToken(string idToken)
+        {
+            return await _lineLoginService.GetUserProfileByIdToken(idToken);
+        }
     }
 }

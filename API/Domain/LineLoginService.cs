@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using System.Web;
 using API.Dtos.Login;
 using API.Dtos.Profile;
@@ -16,8 +12,9 @@ namespace API.Domain
 
         private readonly JsonProvider _jsonProvider = new JsonProvider();
         private readonly string loginUrl = "https://access.line.me/oauth2/v2.1/authorize?response_type={0}&client_id={1}&redirect_uri={2}&state={3}&scope={4}";
-        private readonly string clientId = "clientId"; //{channel ID}
-        private readonly string clientSecret  = "clientSecret";//channel secret}
+        private readonly string idTokenProfileUrl = "https://api.line.me/oauth2/v2.1/verify/?id_token={0}&client_id={1}";
+        private readonly string clientId = ""; //{channel ID}
+        private readonly string clientSecret  = "";//channel secret}
         private readonly string tokenUrl = "https://api.line.me/oauth2/v2.1/token";
         private readonly string profileUrl = "https://api.line.me/v2/profile";
 
@@ -30,8 +27,9 @@ namespace API.Domain
         public  string GetLoginUrl(string redirectUrl)
         {
             //根據想要得到的資訊填寫
-            var scope = "profile&openId";
-
+            //var scope = "profile&openId"; //Access Token 使用
+            
+            var scope = "profile%20openid%20email"; //ID Token
             //這個 state 是隨便打的
             var state = "1qazRTGFDY5ysg";
 
@@ -44,30 +42,30 @@ namespace API.Domain
         public async Task<TokensResponseDto> GetTokensByAuthToken(string authToken,string callbackUri)
         {
             var formContent = new FormUrlEncodedContent(new[]
-    {
-        new KeyValuePair<string, string>("grant_type", "authorization_code"),
-        new KeyValuePair<string, string>("code", authToken),
-        new KeyValuePair<string, string>("redirect_uri",callbackUri),
-        new KeyValuePair<string, string>("client_id", clientId),
-        new KeyValuePair<string, string>("client_secret", clientSecret),
-    });
+            {
+                new KeyValuePair<string, string>("grant_type", "authorization_code"),
+                new KeyValuePair<string, string>("code", authToken),
+                new KeyValuePair<string, string>("redirect_uri",callbackUri),
+                new KeyValuePair<string, string>("client_id", clientId),
+                new KeyValuePair<string, string>("client_secret", clientSecret),
+            });
 
-    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json")); //添加 accept header
-    var response = await client.PostAsync(tokenUrl, formContent); // 送出 post request
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json")); //添加 accept header
+            var response = await client.PostAsync(tokenUrl, formContent); // 送出 post request
 
-    Console.WriteLine("顯示回應訊息" + response);
+            Console.WriteLine("顯示回應訊息" + response);
 
-    //檢查回應是否成功
-    // if (!response.IsSuccessStatusCode)
-    // {
-    //     var errorContent = await response.Content.ReadAsStringAsync();
-    //     Console.WriteLine("Error: " + errorContent); // 記錄或顯示錯誤
-    //     throw new Exception("Error while fetching tokens: " + errorContent);
-    // }
+            //檢查回應是否成功
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Error: " + errorContent); // 記錄或顯示錯誤
+                throw new Exception("Error while fetching tokens: " + errorContent);
+            }
 
-    var dto = _jsonProvider.Deserialize<TokensResponseDto>(await response.Content.ReadAsStringAsync()); //將 json response 轉成 dto
+            var dto = _jsonProvider.Deserialize<TokensResponseDto>(await response.Content.ReadAsStringAsync()); //將 json response 轉成 dto
 
-    return dto;
+            return dto;
         }
 
         public async Task<UserProfileDto> GetUserProfileByAccessToken(string accessToken)
@@ -79,6 +77,15 @@ namespace API.Domain
             var profile = _jsonProvider.Deserialize<UserProfileDto>(await response.Content.ReadAsStringAsync());
 
             return profile;
+        }
+
+        public async Task<UserIdTokenProfileDto> GetUserProfileByIdToken(string idToken)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, string.Format(idTokenProfileUrl,idToken,clientId));
+            var response = await client.SendAsync(request);
+            var dto = _jsonProvider.Deserialize<UserIdTokenProfileDto>(await response.Content.ReadAsStringAsync());
+
+            return dto;
         }
     }
 }
